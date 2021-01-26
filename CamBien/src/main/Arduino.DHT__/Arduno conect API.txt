@@ -1,0 +1,173 @@
+#include <ArduinoJson.h>
+
+
+
+
+
+#include <ESP8266HTTPClient.h>
+
+//#include <ArduinoJson.h>
+
+//
+//
+#include "DHT.h"
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
+#include <SPI.h>
+#include <MFRC522.h>
+
+
+int value,real_value;
+#define Ro_le 12
+#define D5  14
+#define DELAY_TIME 500
+char* ssid = "JavaMaster";
+ char* password = "66666666";
+//WiFiClient client;
+char server[] = "192.168.1.35";   //eg: 192.168.0.222
+//int LED = D0;
+
+WiFiClient client;    
+
+void setup() {
+  pinMode(D5,OUTPUT);
+  Serial.begin(115200);    
+  delay(1);
+  pinMode(5,INPUT_PULLUP);
+//   pinMode(LED, OUTPUT);
+pinMode(Ro_le, OUTPUT);
+//  digitalWrite(LED, HIGH); 
+  Serial.println();
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+ 
+  WiFi.begin(ssid, password);
+ 
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  // Start the server
+//  server.begin();
+  Serial.println("Server started");
+  Serial.print(WiFi.localIP());
+  delay(10000);
+  Serial.println("connecting...");//
+}
+ 
+void loop() {
+  int doam = map(value, 350, 1023, 0, 100); 
+ 
+
+  for(int i=0;i<=9;i++){
+    real_value+=analogRead(A0);
+  }
+  value=real_value/10;
+                                      
+  doam=100-doam;                           
+  Serial.print(doam);
+  Serial.print('%');
+  Serial.print(" ");
+  Serial.print("Gia tri analog: ");
+  Serial.print(value);
+  Serial.print(" ");
+  Serial.print("Gia tri digital: ");
+
+ 
+  Serial.println(digitalRead(5));
+  delay(200);
+  Sending_To_phpmyadmindatabase(doam); 
+  delay(1000); // interval
+  real_value=0;
+  
+}
+
+
+void Sending_To_phpmyadmindatabase(float doam)  
+ {
+ 
+    if(doam>70){  
+//    alert();
+digitalWrite(Ro_le, LOW);
+digitalWrite(D5,LOW);
+  }
+  else{
+    alert();
+     digitalWrite(D5,HIGH);
+    }
+
+
+
+
+    
+  Serial.println("bắt dầu hàm if !!!");
+   if (client.connect(server, 8080)) {
+    
+    Serial.println("connected to local server");
+    Serial.println("Bat dau GET");
+    String myString = String(doam); 
+    Serial.println(myString);
+String url="http://192.168.1.109:8081/api/add?temperature="+myString+"&huminity="+myString;
+client.print("GET http://192.168.1.109:8081/api/add?temperature=");
+Serial.println(doam);
+    client.print(doam);
+
+HTTPClient http;
+//http.begin("http://jsonplaceholder.typicode.com/users/1");  //API
+http.begin(url);
+int httpCode = http.GET();   
+if (httpCode > 0) { //Check the returning code
+
+
+ DynamicJsonDocument payload(1024);
+
+deserializeJson(payload, http.getString());
+
+
+serializeJson(payload, Serial);                    //Print the response payload
+ 
+}
+ 
+http.end(); 
+delay(3000);  
+
+
+
+    Serial.println(doam);
+    client.print(doam);
+    Serial.println("chay qua GET");
+    client.print(" ");      //SPACE BEFORE HTTP/1.1
+    client.print("HTTP/1.1");
+    client.println();
+    client.println("Host: add your ip here"); 
+    client.println("Connection: close");
+    client.println(); 
+
+
+    Serial.print("GET ");
+    client.println("GET / HTTP/1.1"); 
+    Serial.println("HOAN THANH ");
+    client.println(); //end of get request
+  } else {
+    // if you didn't get a connection to the server:
+    Serial.println("connection failed");
+  }
+ }
+
+
+
+
+
+void alert()
+{
+  Serial.print("vao alert rồi");
+
+  digitalWrite(Ro_le, HIGH);
+//  delay(DELAY_TIME);
+  Serial.print("ra alert");
+}

@@ -1,0 +1,10 @@
+{
+  "expoServerPort": 19000,
+  "expoServerNgrokUrl": "https://zh-z4w.linkin.cam-bien-app.exp.direct",
+  "packagerNgrokUrl": "https://packager.zh-z4w.linkin.cam-bien-app.exp.direct",
+  "ngrokPid": 20636,
+  "devToolsPort": 19002,
+  "packagerPort": 19001,
+  "packagerPid": 14916,
+  "webpackServerPort": null
+}
